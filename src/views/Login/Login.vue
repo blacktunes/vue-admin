@@ -36,6 +36,7 @@
 import { login } from '@/api/login'
 import Validcode from '@/components/Validcode'
 import { encrypt } from '@/assets/js/encrypt'
+import { Message } from 'element-ui'
 
 export default {
   components: {
@@ -43,14 +44,18 @@ export default {
   },
   data () {
     var validateUsername = (rule, value, callback) => {
-      if (value === '') {
+      if (this.loginError) {
+        callback(new Error('用户名或密码错误'))
+      } else if (value === '') {
         callback(new Error('请输用户名'))
       } else {
         callback()
       }
     }
     var validatePassword = (rule, value, callback) => {
-      if (value === '') {
+      if (this.loginError) {
+        callback(new Error('用户名或密码错误'))
+      } else if (value === '') {
         callback(new Error('请输入密码'))
       } else {
         callback()
@@ -99,7 +104,8 @@ export default {
           { validator: validateCheck, trigger: 'blur' }
         ]
       },
-      validcode: ''
+      validcode: '',
+      loginError: false
     }
   },
   computed: {
@@ -123,7 +129,25 @@ export default {
         if (valid) {
           this.loginData.username = this.loginForm.username
           this.loginData.password = encrypt(this.loginForm.password, 100)
-          login(this.loginData)
+          login(this.loginData).then((res) => {
+            if (res.data.ERR_CODE === 0) {
+              this.$router.push('/')
+            } else {
+              this.loginError = true
+              this.$refs.loginForm.validateField('username')
+              this.$refs.loginForm.validateField('password')
+              this.$refs.validcode.refreshCode()
+              this.loginForm.check = ''
+              this.loginError = false
+            }
+          })
+            .catch(() => {
+              Message({
+                message: '登录异常',
+                offset: 10,
+                type: 'error'
+              })
+            })
         } else {
           console.log('error submit!!')
           return false

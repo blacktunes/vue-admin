@@ -8,9 +8,7 @@ export function encrypt (str, num) {
   while (i < num) {
      temp = sha3_256(temp)
     i++
-    console.log(i, temp)
   }
   let time = new Date().getTime() - startTime
-  console.log(time / 1000)
   return temp
 }
