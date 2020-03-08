@@ -1,10 +1,28 @@
 <template>
-  <div>vue-template</div>
+  <div :class="[isCollapse ? 'close' : 'open']">
+    <layout-header></layout-header>
+    <layout-nav></layout-nav>
+    <layout-main></layout-main>
+  </div>
 </template>
 
 <script type="text/ecmascript-6">
-export default {
+import LayoutHeader from './Layout/Header'
+import LayoutNav from './Layout/Nav'
+import LayoutMain from './Layout/Main'
+import { mapState } from 'vuex'
 
+export default {
+  components: {
+    LayoutHeader,
+    LayoutNav,
+    LayoutMain
+  },
+  computed: {
+    ...mapState([
+      'isCollapse'
+    ])
+  }
 }
 </script>
 
