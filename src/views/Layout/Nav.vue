@@ -27,6 +27,12 @@
           <el-menu-item index="2-2">选项2</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
+      <el-menu-item index="3">
+        <span slot="title">
+          <i class="el-icon-setting"></i>
+          <span>123</span>
+        </span>
+      </el-menu-item>
     </el-menu>
   </div>
 </template>
@@ -69,20 +75,27 @@ export default {
     border-right none
   & >>> .el-menu-item-group__title
     padding 0 !important
-  & >>> .el-submenu.is-opened.is-active
-    .el-submenu__title
-      background-color #444 !important
-  .el-menu-item
-    padding-left 48px !important
-    font-size 14px
-    &.is-active
-      background-color #555 !important
+  .el-menu-item-group
+    .el-menu-item
+      padding-left 48px !important
+      font-size 14px
 
 .el-menu-item-group
   & >>> .el-menu-item-group__title
     padding 0 !important
 
 .open
+  .el-menu >>> .el-submenu.is-opened.is-active
+    .el-submenu__title
+      background-color #444 !important
+      transition background-color 0.5s ease
+  .el-menu >>> .el-submenu__title
+    color #fff !important
+    transition all 0.3s ease
+  .el-menu-item
+    color #fff !important
+    &.is-active
+      background-color #555 !important
   .nav-wrapper
     width $navMenu
   .logo
@@ -90,6 +103,15 @@ export default {
     font-size 50px
     line-height 110px
 .close
+  .el-menu >>> .el-submenu.is-opened.is-active
+    .el-submenu__title
+      background-color #666 !important
+  .el-menu >>> .el-submenu__title
+    color transparent !important
+  .el-menu-item
+    color transparent !important
+    &.is-active
+      background-color #666 !important
   .nav-wrapper
     width $navMenuMin
   .logo

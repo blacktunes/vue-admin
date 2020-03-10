@@ -1,11 +1,7 @@
 <template>
   <div class="login">
     <div class="login-wrapper">
-      <ul class="menu-tab">
-        <li :class="{'current': isActive === index, 'disabled': isActive != index}"
-            v-for="(item, index) in menuTab"
-            :key="index">{{item.name}}</li>
-      </ul>
+      <div class="logo">Logo</div>
       <el-form :model="loginForm" ref="loginForm" class="login-form" status-icon :rules="rules" @keyup.enter.native="login('loginForm')">
         <el-form-item prop="username">
           <label>用户名</label>
@@ -15,7 +11,7 @@
           <label>密码</label>
           <el-input type="password" v-model="loginForm.password"></el-input>
         </el-form-item>
-        <el-form-item prop="check">
+        <el-form-item prop="check" v-if="useValidcode">
           <label>验证码</label>
           <div class="check">
             <el-input v-model="loginForm.check" maxlength="4"></el-input>
@@ -25,7 +21,7 @@
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button type="danger" class="login-btn" @click="login('loginForm')" :disabled="btnDisabled">登录</el-button>
+          <el-button type="info" class="login-btn" @click="login('loginForm')" :disabled="btnDisabled">登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -37,6 +33,7 @@ import { login } from '@/api/login'
 import Validcode from '@/components/Validcode'
 import { encrypt } from '@/assets/js/encrypt'
 import { Message } from 'element-ui'
+import { setToken, setUsername } from '@/assets/js/cookies'
 
 export default {
   components: {
@@ -71,17 +68,6 @@ export default {
       }
     }
     return {
-      menuTab: [
-        {
-          id: 0,
-          name: '登录'
-        },
-        {
-          id: 1,
-          name: '注册'
-        }
-      ],
-      isActive: 0,
       // 数据验证用数据
       loginForm: {
         username: '',
@@ -105,7 +91,8 @@ export default {
         ]
       },
       validcode: '',
-      loginError: false
+      loginError: false,
+      useValidcode: false // 是否使用验证码
     }
   },
   computed: {
@@ -113,10 +100,18 @@ export default {
       return this.loginForm.check
     },
     btnDisabled () {
-      if (this.loginForm.username !== '' && this.loginForm.password !== '' && this.loginForm.check !== '' && this.loginForm.check.toLowerCase() === this.validcode.toLowerCase()) {
-        return false
+      if (this.useValidcode) {
+        if (this.loginForm.username !== '' && this.loginForm.password !== '' && this.loginForm.check !== '' && this.loginForm.check.toLowerCase() === this.validcode.toLowerCase()) {
+          return false
+        } else {
+          return true
+        }
       } else {
-        return true
+        if (this.loginForm.username !== '' && this.loginForm.password !== '') {
+          return false
+        } else {
+          return true
+        }
       }
     }
   },
@@ -131,19 +126,21 @@ export default {
           this.loginData.password = encrypt(this.loginForm.password, 100)
           login(this.loginData).then((res) => {
             if (res.data.ERR_CODE === 0) {
+              setToken(res.data.token)
+              setUsername(res.data.username)
               this.$router.push('/')
             } else {
               this.loginError = true
               this.$refs.loginForm.validateField('username')
               this.$refs.loginForm.validateField('password')
-              this.$refs.validcode.refreshCode()
-              this.loginForm.check = ''
+              this.resetValidcode()
               this.loginError = false
             }
           })
             .catch(() => {
+              this.resetValidcode()
               Message({
-                message: '登录异常',
+                message: '网络异常',
                 offset: 10,
                 type: 'error'
               })
@@ -156,6 +153,13 @@ export default {
     },
     validcodeChange (validcode) {
       this.validcode = validcode
+    },
+    resetValidcode () {
+      if (this.useValidcode) {
+        this.$refs.validcode.refreshCode()
+        this.loginForm.check = ''
+        this.$refs.loginForm.clearValidate('check')
+      }
     }
   },
   watch: {
@@ -174,37 +178,28 @@ export default {
 <style lang="stylus" scoped>
 .login
   height 100vh
-  background #344a5f
+  background #666
   .login-wrapper
     width 330px
     margin auto
-  .menu-tab
-    text-align center
-    li
-      display inline-block
-      width 88px
-      line-height 36px
-      font-size 14px
-      color #fff
-      border-radius 2px
-      cursor pointer // 鼠标手势
-    .current
-      background rgba(0, 0, 0, .1)
-    .disabled
-      cursor no-drop
-  .login-form
-    margin-top 29px
-    label
-      color #fff
-    .check
-      display flex
-    .validcode
-      margin-left 10px
-      width 110px
-      border-radius 4px
-      background #fff
-      user-select none // 禁止选中文本
-    .login-btn
-      margin-top 19px
-      width 100%
+    .logo
+      padding-top 30px
+      text-align center
+      color #bbb
+      font-size 50px
+    .login-form
+      margin-top 29px
+      label
+        color #fff
+      .check
+        display flex
+      .validcode
+        margin-left 10px
+        width 110px
+        border-radius 4px
+        background #fff
+        user-select none // 禁止选中文本
+      .login-btn
+        margin-top 19px
+        width 100%
 </style>

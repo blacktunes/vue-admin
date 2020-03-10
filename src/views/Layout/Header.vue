@@ -1,22 +1,30 @@
 <template>
   <div class="header-wrapper">
     <div class="el-icon-menu icon" @click="changeCollapse"></div>
-    <div class="el-icon-switch-button logout"></div>
+    <div class="el-icon-switch-button logout" @click="logout"></div>
+    <div class="username">{{username}}</div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { getUsername } from '@/assets/js/cookies'
 
 export default {
   computed: {
     ...mapState([
       'isCollapse'
-    ])
+    ]),
+    username () {
+      return getUsername()
+    }
   },
   methods: {
     changeCollapse () {
-      this.$store.commit('SET_IS_COLLAPSE', !this.isCollapse)
+      this.$store.commit('SET_IS_COLLAPSE')
+    },
+    logout () {
+      this.$router.push('/login')
     }
   }
 }
@@ -42,6 +50,11 @@ export default {
     cursor pointer
     &:hover
       color #bbb
+  .username
+    line-height $header
+    float right
+    font-size 20px
+    margin-right 15px
   .logout
     line-height $header
     float right
